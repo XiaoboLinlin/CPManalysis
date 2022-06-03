@@ -6,7 +6,7 @@ import os
 import mdtraj as md
 project = signac.get_project()
 
-def charge_dist(case, voltage, gro_file, charge_file_name='charge.npy', target_res = 'cdc', seeds = [0,1,2,3], n_frames = 2500, statistic='mean'):
+def charge_dist(case, voltage, gro_file, charge_file_name='charge.npy', target_res = 'cdc', seeds = [0,1,2,3], n_frames = 2500, statistic='mean', binwidth = 0.1):
     """calculate the charge distribution in one direction for targeted atoms
         currently, this function only supperts atoms with fixed positions.
 
@@ -32,7 +32,7 @@ def charge_dist(case, voltage, gro_file, charge_file_name='charge.npy', target_r
             target = one_frame.atom_slice(target_top_idx)
             z_data = target.xyz[0,:,2]
             avg_charge = np.mean(charge[-n_frames:], axis = 0)
-            binwidth = 0.1
+            
             bins = np.arange(0, max(z_data) + binwidth, binwidth)
             targe_avg_charge = avg_charge[target_top_idx]
             charge_distribution = stats.binned_statistic(z_data, targe_avg_charge, statistic=statistic, bins=bins)
