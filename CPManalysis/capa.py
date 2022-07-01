@@ -5,9 +5,12 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
+
 project = signac.get_project()
 
+
 def get_potential(case, range='middle', voltage = 0, seeds = [0,1,2,3]):
+    # os.chdir('/global/project/projectdirs/m1046/Xiaobo/project/self_project/cdc_clp_2_lm_cori_3more_analysis/src/')
     """get potential at different location range
 
     Args:
@@ -184,13 +187,14 @@ def plot_V_charge(case, plot = False):
         ax.set_xlabel('Voltage (V)')
     return x, y
 
-def plot_gp(x, y, pred_range=[-1.7,1.9], plot = True, length_scale = 1, length_scale_bounds=(1e-5, 1e5), kernel_choice = 'rbf', sigma_0=1,sigma_0_bounds=(1e-5, 1e5)):
+def plot_gp(x, y, pred_range=[-1.7,1.9], plot = True, length_scale = 1, length_scale_bounds=(1e-5, 1e5), kernel_choice = ['rbf', 'white_kernel','dotproduct'], sigma_0=1,sigma_0_bounds=(1e-5, 1e5)):
     """calcuate Gaussian process regression for x and y; plot or not plot
     Args:
         x (_type_): electrode potential (V) (potential difference between electrode and bulk relative to the PZC)
         y (_type_): electrode charge (e)
         plot (boolen): plot out or not
         length_scale (int, optional): for RBF decay. Defaults to 1.
+        kernel_choice (list): defaults to ['rbf', 'white_kernel','dotproduct']
         limit (_type_, optional): lower boundary of length_scale_bounds. Defaults to 1e-5.
 
     Returns:
@@ -204,16 +208,42 @@ def plot_gp(x, y, pred_range=[-1.7,1.9], plot = True, length_scale = 1, length_s
     from sklearn import gaussian_process
     from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel, DotProduct, RBF
     # kernel = ConstantKernel() + Matern(length_scale=2, nu=3/2) + WhiteKernel(noise_level=1)
-    if kernel_choice == 'rbf':
-        kernel = RBF(length_scale=length_scale, length_scale_bounds=length_scale_bounds) + WhiteKernel(noise_level=100) + DotProduct(sigma_0=sigma_0,sigma_0_bounds=sigma_0_bounds)
-    elif kernel_choice == 'matern':
-        kernel = Matern(length_scale=2, nu=3/2) + WhiteKernel(noise_level=100) + DotProduct()
+    kernel_dict = {
+        'rbf': RBF(length_scale=length_scale, length_scale_bounds=length_scale_bounds),
+        'matern':  Matern(length_scale=2, nu=3/2),
+        'white_kernel': WhiteKernel(noise_level=100),
+        'dotproduct':DotProduct(sigma_0=sigma_0,sigma_0_bounds=sigma_0_bounds)
+    }
+    
+    for i, item in enumerate(kernel_choice):
+        if i == 0:
+            kernel =kernel_dict[item]
+        else:
+            kernel +=kernel_dict[item]
+    
+    # if kernel_choice == 'rbf':
+    #     kernel = RBF(length_scale=length_scale, length_scale_bounds=length_scale_bounds) + WhiteKernel(noise_level=100) + DotProduct(sigma_0=sigma_0,sigma_0_bounds=sigma_0_bounds)
+    # elif kernel_choice == 'rbf_no_dot':
+    #     kernel = RBF(length_scale=length_scale, length_scale_bounds=length_scale_bounds) + WhiteKernel(noise_level=100)
+    # elif kernel_choice == 'matern':
+    #     kernel = Matern(length_scale=2, nu=3/2) + WhiteKernel(noise_level=100) #+ DotProduct()
+        
     
     gp = gaussian_process.GaussianProcessRegressor(kernel=kernel)
     x = np.array(x)
     X = x.reshape(-1, 1)
     gp.fit(X, y)
     print(gp.kernel_)
+    
+    # if 'dotproduct' not in kernel_choice:
+    #     if gp.kernel_.k1.length_scale < 0.1:
+    #         print('weird length scale {}, which will be ignored'.format(gp.kernel_.k1.k1.length_scale))
+    #         raise ValueError('weird length scale {}, which will be ignored'.format(gp.kernel_.k1.k1.length_scale))
+    # else:
+    #     if gp.kernel_.k1.k1.length_scale < 0.1:
+    #         print('weird length scale {}, which will be ignored'.format(gp.kernel_.k1.k1.length_scale))
+    #         raise ValueError('weird length scale {}, which will be ignored'.format(gp.kernel_.k1.k1.length_scale))
+    
     x_pred = np.linspace(pred_range[0], pred_range[1]).reshape(-1,1)
     y_pred, sigma = gp.predict(x_pred, return_std=True)
     x_pred = x_pred.flatten()

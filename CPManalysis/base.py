@@ -7,7 +7,15 @@ from itertools import combinations
 project = signac.get_project()
 
 class post_analysis:
-    def __init__(self, case_name, idx=1, voltages=np.arange(0.25,3+0.25,0.25), fit_func = 'func_stretch', combination_num=2, para_limit=[17, 6, 15], maxfev = 800):
+    def __init__(self, case_name, 
+                 first_n_frame = 12500,
+                 idx=1, 
+                 seeds = [0,1,2,3],
+                 voltages=np.arange(0.25,3+0.25,0.25), 
+                 fit_func = 'func_stretch', 
+                 combination_num=2, 
+                 para_limit=[17, 6, 15], 
+                 maxfev = 800):
         """initialize
 
         Args:
@@ -27,11 +35,13 @@ class post_analysis:
         """
         self.case = case_name
         self.idx = idx
+        self.first_n_frame = first_n_frame
         self.voltages = voltages
         self.fit_func = fit_func
         self.combination_num = combination_num
         self.para_limit=para_limit
         self.maxfev = maxfev
+        self.seeds  = seeds
     
     def case_runner(self):
         """for each case, it produce the a dictionary, which contains all voltages, and each voltage has 4 seeds, and each seed has a np array charge (sum of charge for positive electrode)
@@ -45,7 +55,6 @@ class post_analysis:
         cases = ['neat_emimtfsi', 'acn_emimtfsi', 'acn_litfsi', 'wat_litfsi']
         
         # voltages=np.array([0.5])
-        seeds = [0,1,2,3]
         # seeds = [1]
         i  = 0
         charge_list = []
@@ -55,19 +64,21 @@ class post_analysis:
 
         for voltage in self.voltages:
             for case in cases:
-                for seed in seeds:
+                for seed in self.seeds:
                     for job in project.find_jobs():
                         if job.statepoint()['case'] == case and job.statepoint()['seed'] == seed and job.statepoint()['case'] == self.case and job.statepoint()['voltage'] == voltage:
                             # print(job.id)
                             charge_file = os.path.join(job.workspace(), "pele_charge.npy")
+                            
                             charge = np.load(charge_file)
+                            charge= charge[:self.first_n_frame]
                             # charge_dict[voltage].append(charge[:,1])
                             charge_list.append(charge[:,1])
                             # i = i + 1
                             # print(i)
         return charge_list
     
-    def fit_seeds(self, charge_list, seed_num = 4):
+    def fit_seeds(self, charge_list, seed_num = -1):
         """fit each seed in each voltage
         Args:
             charge_dict (list): 2d list
@@ -76,7 +87,8 @@ class post_analysis:
         Returns:
             pd dataframe: df that has been cleaned (obviously wrong data are deleted). For example, which tao = 1 M or 20, the correponding seed should be deleted.
         """
-        
+        if seed_num == -1:
+            seed_num = len(self.seeds)
         from scipy.optimize import curve_fit
         
         def func_bi(t, sig, c, tao1, tao2):
@@ -166,7 +178,7 @@ class post_analysis:
         total = self.mean_std(df)
         return total
     
-    def transfer_df(self, charge_list, set_seed_num=4):
+    def transfer_df(self, charge_list):
         """transfer charge_list (list contains all charge for all seeds) to pd.dataframe leveled by voltage and seeds
         important step to make dataframe tidy 
         note: using 4 seeds as default
@@ -175,6 +187,7 @@ class post_analysis:
         Returns:
             pd dataframe: well organized df (from 0 level 2d list)
         """
+        set_seed_num=len(self.seeds)
         voltages = self.voltages
         print('The number of seeds is in transfer_df()', set_seed_num)
         seeds = np.array(["seed_%d" % i for i in range(0,set_seed_num)])
@@ -190,7 +203,8 @@ class post_analysis:
             each_v (np.array): charge for all seeds
             num (int): how many seeds you want to use to get the averaged new one seed. 
         """
-        comb = combinations([0, 1, 2, 3], num)
+        
+        comb = combinations(self.seeds, num)
         new_each_v = []
         for i in comb:
             each_v_mean = np.mean(each_v[i,:], axis = 0)
@@ -211,10 +225,10 @@ class post_analysis:
         
         voltages = self.voltages
         df_original_charge= self.transfer_df(charge_list)
-        comb = combinations([0, 1, 2, 3], self.combination_num)
+        comb = combinations(self.seeds, self.combination_num)
         self.current_number_reseed = len(list(comb))
         print('the number of reseeds is ', self.current_number_reseed)
-        total_new_charge = []
+        total_new_charge = [] 
         for v in voltages:
             each_v = df_original_charge.loc[v].to_numpy()
             new_each_v = self.make_new_each_v(each_v, self.combination_num)
@@ -237,7 +251,7 @@ class post_analysis:
         print('idx is ', self.idx)
         charge_list = self.case_runner()
         total_new_charge, total_new_charge1 = self.re_seed(charge_list)
-        new_seed_num = len(list(combinations([0, 1, 2, 3], self.combination_num)))
+        new_seed_num = len(list(combinations(self.seeds, self.combination_num)))
         print('new number of seeds is ', new_seed_num)
         df = self.fit_seeds(total_new_charge1, seed_num = new_seed_num)
         total = self.mean_std(df)
@@ -278,7 +292,7 @@ class post_analysis:
         df_all_charge2 = df_all_charge1[:, -last_fifth:]
         total_new_charge, total_new_charge_reshape = self.re_seed(df_all_charge2)
         df_all_charge3 = np.mean(total_new_charge_reshape, axis = 1)
-        df_all_charge3 = self.transfer_df(df_all_charge3, set_seed_num = self.current_number_reseed)
+        df_all_charge3 = self.transfer_df(df_all_charge3)
         total = self.mean_std(df_all_charge3, idx = 0)
         return total
     

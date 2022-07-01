@@ -21,7 +21,7 @@ def find_cdc_boundary(one_trj, res_id):
     if res_id == 0:
         max_value = max(one_frame_trj.xyz[0,:,2])
         return max_value
-    if res_id == 2:
+    else:
         min_value = min(one_frame_trj.xyz[0,:,2])
         return min_value
     
@@ -75,7 +75,7 @@ def chunk_mean(trj_com, bins, new_time_space = 0.2):
 
     Args:
         trj_com (_type_): _description_
-        bins (_type_): _description_
+        bins (_type_): for distance chunk range
 
     Returns:
         bins, mean_value: for example, mean_value[0] is the first bin range of values
@@ -101,7 +101,7 @@ def chunk_mean(trj_com, bins, new_time_space = 0.2):
 
 
 def avg_seeds(case, voltage, seeds = [0,1,2,3], normalize = 'subtract'):
-    """ make the each ione_data the same shape and make mean of them.
+    """ make the each ione_data the same shape and make mean of them based on the ion_exchange_.npy
 
     Args:
         case (_type_): _description_
@@ -110,6 +110,7 @@ def avg_seeds(case, voltage, seeds = [0,1,2,3], normalize = 'subtract'):
 
     Returns:
         mean_total_list: each element inside is a matrix
+            First column is time
     """
     total_list = []
     dict_mean_total_list = {}

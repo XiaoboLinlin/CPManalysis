@@ -3,9 +3,13 @@ setup.py
 CPManalysis/__init__.py
 CPManalysis/base.py
 CPManalysis/capa.py
+CPManalysis/capa_hist.py
+CPManalysis/capa_range.py
 CPManalysis/charge_dist.py
 CPManalysis/clean_file.py
 CPManalysis/density.py
+CPManalysis/density_dist.py
+CPManalysis/diff_capa.py
 CPManalysis/read_file.py
 CPManalysis/stream_length.py
 CPManalysis.egg-info/PKG-INFO
