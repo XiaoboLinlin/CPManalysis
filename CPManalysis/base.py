@@ -13,7 +13,7 @@ class post_analysis:
                  seeds = [0,1,2,3],
                  voltages=np.arange(0.25,3+0.25,0.25), 
                  fit_func = 'func_stretch', 
-                 combination_num=2, 
+                 combination_num=1, 
                  para_limit=[17, 6, 15], 
                  maxfev = 800):
         """initialize

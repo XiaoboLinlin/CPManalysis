@@ -30,8 +30,10 @@ def calc_density_distribution(trj_total, last_n_frame = 2500, res_name = 'tfsi',
 
     gro_xyz = trj_total[-1].xyz[0]
     gro_xyz = gro_xyz[:,2]
-    bins = np.arange(min(gro_xyz), max(gro_xyz) + binwidth, binwidth)
-
+    
+    # bins = np.arange(min(gro_xyz), max(gro_xyz) + binwidth, binwidth)
+    bins = np.arange(0, box[2] + binwidth, binwidth)
+    
     hist, bin_edges = np.histogram(data, bins=bins)
 
     new_hist = hist/total_bin_volumn

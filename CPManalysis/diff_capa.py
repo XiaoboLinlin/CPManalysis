@@ -57,7 +57,7 @@ class diff_capa:
         Returns:
             _type_: _description_
         """
-        x_pred, y_pred, sigma = capa.plot_gp(x, y, pred_range=[-1.7,1.9], plot=False, length_scale = 2, length_scale_bounds=(0.05, 1e5), kernel_choice=self.kernel_choice)
+        x_pred, y_pred, sigma = capa.plot_gp(x, y, pred_range=[-1.6,1.8], plot=False, length_scale = 2, length_scale_bounds=(0.05, 1e5), kernel_choice=self.kernel_choice)
             # ax.set_xlim(-1.8,2.1)
         gradient_y = np.gradient(y_pred, x_pred)
         return np.array(x_pred), np.array(gradient_y)
@@ -99,22 +99,30 @@ class diff_capa:
                 resample_data_total.append(resample_data)
         return np.array(resample_data_total)
 
-    def run_diff_bootstrap(self):
+    def run_diff_bootstrap(self, x=False, y=False):
         """_summary_
 
         Returns:
             _type_: get all x, y for gp results for all iteractions, [:, :, :] -> [n_iterations, x, y]
+            x : electrode potential (V)
+            y : charges corresponding to the electrode potentialm (C/g)
         """
-        
-        x, y = self.run_case()
+        if x == False and y==False:
+            print('calculate the total electrode charge vs electrode potential')
+            x, y = self.run_case()
+            clean_x = np.concatenate((x[0::2],x[1::2]))
+            clean_y = np.concatenate((y[0::2],y[1::2]))
+        else:
+            print('calculate the inputed charges vs potential')
+            clean_x = x
+            clean_y = y
         # a = np.array([x,y])
         # data = a.T
         # rng = np.random.default_rng()
         # res = bootstrap((x, y), run_gp, vectorized=False, paired=True, random_state=rng,n_resamples =3)
 
         ### x[0::2] is for positive, and x[1::2] is for negative
-        clean_x = np.concatenate((x[0::2],x[1::2]))
-        clean_y = np.concatenate((y[0::2],y[1::2]))
+        
         resample_data_total = self.resample_seeds(clean_x , clean_y)
         resample_data_total.shape
 

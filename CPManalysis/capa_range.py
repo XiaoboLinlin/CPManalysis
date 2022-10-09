@@ -49,7 +49,8 @@ def run_range(total_range,
     Returns:
         np.array: electrode potential, charge, capacitance for a distance range
     """
-    charge_list = []
+    charge_list = [] ### total charge in a range
+    charge_density_list = [] ### charge density in a range (C/g)
     capa_list = []
     electrode_potential = []
     # n_capa_list = []
@@ -70,11 +71,13 @@ def run_range(total_range,
                 # integral_capa =  sum_select_array/electrode_diff
                 # n_integral_capa =  -sum_select_array/n_electrode_diff
                 integral_capa = capa.unit_convert(sum_select_array, electrode_diff, n_atom=n_atoms_array)
+                charge_density = capa.unit_convert_C_g(sum_select_array, n_atom=n_atoms_array)
                 # n_integral_capa = capa.unit_convert(-sum_select_array, n_electrode_diff, n_atom=n_atoms_array)
                 capa_list.append(integral_capa)
                 electrode_potential.append(electrode_diff)
                 charge_list.append(sum_select_array)
-    return np.array(electrode_potential), np.array(charge_list), np.array(capa_list)
+                charge_density_list.append(charge_density)
+    return np.array(electrode_potential), np.array(charge_list), np.array(capa_list), np.array(charge_density_list)
 
 
 

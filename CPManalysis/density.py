@@ -100,7 +100,7 @@ def chunk_mean(trj_com, bins, new_time_space = 0.2):
     return new_t[1:], mean_value
 
 
-def avg_seeds(case, voltage, seeds = [0,1,2,3], normalize = 'subtract'):
+def avg_seeds(case, voltage, seeds = [0,1,2,3], normalize = 'subtract', file_endfix =''):
     """ make the each ione_data the same shape and make mean of them based on the ion_exchange_.npy
 
     Args:
@@ -121,10 +121,13 @@ def avg_seeds(case, voltage, seeds = [0,1,2,3], normalize = 'subtract'):
                 for job in project.find_jobs({"case": case, "voltage": voltage, "seed": seed}):
                         # print('yes')
                     
-                    data_file = os.path.join(job.ws, 'ion_exchange_{}.npy'.format(res_name))
+                    data_file = os.path.join(job.ws, 'ion_exchange_{}{}.npy'.format(res_name, file_endfix))
                     ione_data = np.load(data_file)
                     if seed == 3:
-                        keep_idx = np.where(ione_data[:,0]>4) # keep data larger than 4 ns
+                        keep_idx = np.where((ione_data[:,0]>4) & (ione_data[:,0]<=29)) # keep data larger than 4 ns
+                        ione_data = ione_data[keep_idx[0],:]
+                    else:
+                        keep_idx = np.where(ione_data[:,0]<=25) # keep data larger than 4 ns
                         ione_data = ione_data[keep_idx[0],:]
                     if normalize == 'subtract':
                         normalize_ione_data = ione_data - ione_data[0,:]
@@ -156,18 +159,18 @@ def X_calc(dict_mean_total_list, case, counter_ion, co_ion, axis = 2):
         dict_mean_total_list (_type_): result returned from avg_seed
         counter_ion (str):
         co_ion (str):
-        axis: 2 is left first distance chunk, 4 is right first distance chunk
+        axis: 2 is meaningless, axis should be like np.arange(1,12,1) for region selection
     return:
         X_value (np.array)
     """
     #### get n0_counter and n0_co from zero potential
     dict_mean_total_list_0 = avg_seeds(case, voltage = 0, seeds = [1,2], normalize ='original')
-    n0_counter = np.mean(dict_mean_total_list_0[counter_ion][:, axis])
-    n0_co = np.mean(dict_mean_total_list_0[co_ion][:, axis])
+    n0_counter = np.mean(np.sum(dict_mean_total_list_0[counter_ion][:, axis], axis=1))
+    n0_co = np.mean(np.sum(dict_mean_total_list_0[co_ion][:, axis], axis = 1))
     ###
     
-    n_counter = dict_mean_total_list[counter_ion][:, axis]
-    n_co = dict_mean_total_list[co_ion][:, axis]
+    n_counter = np.sum(dict_mean_total_list[counter_ion][:, axis], axis =1)
+    n_co = np.sum(dict_mean_total_list[co_ion][:, axis], axis =1)
     # n0_counter = n_counter[0]
     # n0_co = n_co[0]
     

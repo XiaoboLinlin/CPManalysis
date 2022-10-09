@@ -110,17 +110,16 @@ def unit_convert(charge, voltage, atom_mass =  12.011, n_atom=3620):
     capa = capa.to('F/g')
     return capa
 
-def unit_convert_e_g(charge, atom_mass =  12.011, n_atom=3620):
-    """convert e/amu to e/g
+def unit_convert_C_g(charge, atom_mass =  12.011, n_atom=3620):
+    """convert e/amu to C/g
 
     Args:
         charge (float): the value of elementary charge
-        voltage (float):
         atom_mass (float): the mass for one atom, unit is amu
         n_atom (int): the number of atoms
 
     Returns:
-        float: the value of capacitance (F/g)
+        float: the value of capacitance (C/g)
     """
     import unyt as unit
     charge_value = charge * unit.qp
@@ -165,7 +164,7 @@ def plot_V_charge(case, plot = False):
                 p_electrode_diff = get_electrode_potential_diff(case, 'positive', voltage, seed)
                 n_electrode_diff = get_electrode_potential_diff(case, 'negative', voltage, seed)
                 electrode_charge =  get_electrode_charge(case, voltage, seed, fraction = 1/5)
-                electrode_charge = unit_convert_e_g(electrode_charge)
+                electrode_charge = unit_convert_C_g(electrode_charge)
                 # print(seed, voltage, p_electrode_diff, p_integral_capa, n_electrode_diff,  n_integral_capa)
                 if case == 'neat_emimtfsi':
                     color = 'black'
@@ -183,15 +182,21 @@ def plot_V_charge(case, plot = False):
                 
     if plot:
         ax.plot(x,y, 'o', c= color, markersize=3)
-        ax.set_ylabel('Charge (e)')
+        ax.set_ylabel('Charge (C/g)')
         ax.set_xlabel('Voltage (V)')
     return x, y
 
-def plot_gp(x, y, pred_range=[-1.7,1.9], plot = True, length_scale = 1, length_scale_bounds=(1e-5, 1e5), kernel_choice = ['rbf', 'white_kernel','dotproduct'], sigma_0=1,sigma_0_bounds=(1e-5, 1e5)):
+def plot_gp(x, 
+            y, 
+            pred_range=[-1.7,1.9], 
+            plot = True, 
+            length_scale = 1, length_scale_bounds=(1e-5, 1e5), 
+            kernel_choice = ['rbf', 'white_kernel','dotproduct'], 
+            sigma_0=1, sigma_0_bounds=(1e-5, 1e5)):
     """calcuate Gaussian process regression for x and y; plot or not plot
     Args:
         x (_type_): electrode potential (V) (potential difference between electrode and bulk relative to the PZC)
-        y (_type_): electrode charge (e)
+        y (_type_): electrode charge (C/g)
         plot (boolen): plot out or not
         length_scale (int, optional): for RBF decay. Defaults to 1.
         kernel_choice (list): defaults to ['rbf', 'white_kernel','dotproduct']
@@ -204,7 +209,7 @@ def plot_gp(x, y, pred_range=[-1.7,1.9], plot = True, length_scale = 1, length_s
             sigma: standard deviation associated with y
     """
     if plot:
-        fig, ax = plt.subplots(dpi = 100)
+        fig, ax = plt.subplots(dpi = 150)
     from sklearn import gaussian_process
     from sklearn.gaussian_process.kernels import Matern, WhiteKernel, ConstantKernel, DotProduct, RBF
     # kernel = ConstantKernel() + Matern(length_scale=2, nu=3/2) + WhiteKernel(noise_level=1)
