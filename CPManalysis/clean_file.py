@@ -37,7 +37,7 @@ def clean_dumpfile(file_name, stop_at = -1):
 
     Args:
         file_name (str): the name of original dump file
-        stop_at (int): the step that stop at. for example, stop_at = 14050000, we will use all steps before 14050000 (not include 14050000)
+        stop_at (int): the step that stop at (default -1 means all step will be used). for example, stop_at = 14050000, we will use all steps before 14050000 (not include 14050000)
     """
     import re
     with open(file_name, mode='r') as f:
