@@ -54,6 +54,9 @@ def clean_dumpfile(file_name, stop_at = -1):
     diff = np.diff(ts)
     diff_idx = np.where(diff<=0)
     diff_idx = diff_idx[0] + 1
+    if len(diff_idx) == 0: ### no restart process, so just return original content
+        print('no restart detected')
+        return content
     target_ts = ts[diff_idx]
 
     ### the last time step index

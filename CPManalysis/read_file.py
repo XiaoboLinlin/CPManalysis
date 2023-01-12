@@ -32,25 +32,26 @@ def q_np(lmp_trj, n_atom):
     Returns:
         np array: charge data in 2d array [n_frames, n_atoms]
     """
-    fin = open(lmp_trj, "r")
-    fin.close
-    linelist = fin.readlines()
+    # fin = open(lmp_trj, "r")
+    # fin.close()
+    # linelist = fin.readlines()
     q_total = []
-    look = False
-    i = 0 
-    for line in linelist:
-        i += 1 
-        if (len(line.split()) >= 7 and line.split()[0] != 'ITEM:') or look==True:
-            try:
-                q = float(line.split()[-1])
-            except:
-                look = True
-                print('overlaped line here, cleaned up')
-                print(line.split())
-                # q = float(line.split()[-2][:-5])
-                print('line number ', i)
-                break
-            q_total.append(q)
+    with open(lmp_trj, 'r') as f:
+        look = False
+        i = 0 
+        for line in f:
+            i += 1 
+            if (len(line.split()) >= 7 and line.split()[0] != 'ITEM:') or look==True:
+                try:
+                    q = float(line.split()[-1])
+                except:
+                    look = True
+                    print('overlaped line here, cleaned up')
+                    print(line.split())
+                    # q = float(line.split()[-2][:-5])
+                    print('line number ', i)
+                    break
+                q_total.append(q)
     charge = np.array(q_total)
     charge_2d = np.reshape(charge, (int(len(charge)/n_atom),n_atom))
     return charge_2d

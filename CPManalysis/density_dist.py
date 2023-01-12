@@ -22,7 +22,7 @@ def calc_density_distribution(trj_total, last_n_frame = 2500, res_name = 'tfsi',
 
     total_xyz = np.reshape(total_xyz, (-1,3))
     data = total_xyz[:,2]
-    binwidth = 0.1
+    # binwidth = 0.1
     box = trj_total.unitcell_lengths[0]
     bin_volumn = binwidth * box[0] * box[1]
     total_bin_volumn = bin_volumn * last_n_frame
