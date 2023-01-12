@@ -7,16 +7,23 @@ def calc_density_distribution(trj_total, last_n_frame = 2500, res_name = 'tfsi',
 
     Args:
         trj_total (md.traj): _description_
-        last_n_frame (int, optional): _description_. Defaults to 2500.
-        res_name (str, optional): _description_. Defaults to 'tfsi'.
+        last_n_frame (int or list): _description_. Defaults to 2500. Can select a range by using list type
+        res_name (str, optional): _description_. Defaults to 'all'. It can be like 'emim
         binwidth (float, optional): _description_. Defaults to 0.1.
 
     Returns:
         new_bins, new_hist: _description_
     """
+    if res_name == 'all':
+        trj = trj_total.atom_slice(trj_total.top.select('all'))
+    else:
+        trj = trj_total.atom_slice(trj_total.top.select('resname {}'.format(res_name)))
     
-    trj = trj_total.atom_slice(trj_total.top.select('resname {}'.format(res_name)))
-    trj = trj[-last_n_frame:]
+    if type(last_n_frame) == list:
+        trj = trj[last_n_frame[0]:last_n_frame[1]]
+    else:
+        trj = trj[-last_n_frame:]
+        
     all_xyz = trj.xyz
     total_xyz = all_xyz
 
@@ -25,7 +32,8 @@ def calc_density_distribution(trj_total, last_n_frame = 2500, res_name = 'tfsi',
     # binwidth = 0.1
     box = trj_total.unitcell_lengths[0]
     bin_volumn = binwidth * box[0] * box[1]
-    total_bin_volumn = bin_volumn * last_n_frame
+    n_frame = last_n_frame if type(last_n_frame) is int else len(last_n_frame)
+    total_bin_volumn = bin_volumn * n_frame
     # avg_data = data/total_bin_volumn
 
     gro_xyz = trj_total[-1].xyz[0]
