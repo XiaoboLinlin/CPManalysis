@@ -36,7 +36,7 @@ def calc_density_distribution(trj_total, last_n_frame = 2500, res_name = 'tfsi',
     box_length = list(box[:])
     box_length.remove(box[axis])
     bin_volumn = binwidth * box_length[0] * box_length[1]
-    n_frame = last_n_frame if type(last_n_frame) is int else len(last_n_frame)
+    n_frame = last_n_frame if type(last_n_frame) is int else int(last_n_frame[1] - last_n_frame[0])
     total_bin_volumn = bin_volumn * n_frame
     # avg_data = data/total_bin_volumn
 
