@@ -31,7 +31,7 @@ def del_decrease(x):
         x= np.delete(x, idx, axis = 0)
     return x
 
-def clean_dumpfile(file_name, stop_at = -1):
+def clean_dumpfile(file_name, stop_at = -1, keep_last_frame = False):
     """clean dump file from lammps, like delete repeated timestep and delete buggy timestep due to sudden break
     Note that: the last frame is ingored
 
@@ -95,7 +95,10 @@ def clean_dumpfile(file_name, stop_at = -1):
     new_content = ""
     for i, idx in enumerate(str_idx):
         if i == (length-1):
-            new_content += content[idx[0]:last_ts_idx]
+            if keep_last_frame:
+                new_content += content[idx[0]:idx[1]]
+            else:
+                new_content += content[idx[0]:last_ts_idx]
         else:
             new_content += content[idx[0]:idx[1]]
     return new_content

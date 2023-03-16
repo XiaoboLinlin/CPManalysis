@@ -55,3 +55,41 @@ def q_np(lmp_trj, n_atom):
     charge = np.array(q_total)
     charge_2d = np.reshape(charge, (int(len(charge)/n_atom),n_atom))
     return charge_2d
+
+
+def q_np2(lmp_trj, n_atom):
+    # import sys
+    """extract charge data from ele.lammpstrj (only have id q: ITEM: ATOMS id q) to numpy array
+
+    Args:
+        lmp_trj (_type_): .lammpstrj
+        n_atom (int): the total number of atoms in the system
+
+    Returns:
+        np array: charge data in 2d array [n_frames, n_atoms]
+    """
+    # fin = open(lmp_trj, "r")
+    # fin.close()
+    # linelist = fin.readlines()
+    q_total = []
+    with open(lmp_trj, 'r') as f:
+        look = False
+        i = 0 
+        for line in f:
+            i += 1 
+            line_ = line.split()
+            if line_[0] == "ITEM:" and line_[1] == "ATOMS":
+                look = True
+            if line_[0] == "ITEM:" and line_[1] == "TIMESTEP":
+                look = False
+            if look and line_[0] != "ITEM:":
+                # print('here')
+                try:
+                    q = float(line_[-1])
+                except:
+                    print('line number ', i)
+                    print(line_)
+                q_total.append(q)
+    charge = np.array(q_total)
+    charge_2d = np.reshape(charge, (int(len(charge)/n_atom),n_atom))
+    return charge_2d
