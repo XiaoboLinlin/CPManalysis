@@ -31,7 +31,11 @@ def charge_dist(case, voltage, gro_file, charge_file_name='charge.npy', target_r
             target_top_idx = one_frame.top.select('resname {}'.format(target_res))
             target = one_frame.atom_slice(target_top_idx)
             z_data = target.xyz[0,:,2]
-            avg_charge = np.mean(charge[-n_frames:], axis = 0)
+            if type(n_frames) == list:
+                charge = charge[n_frames[0]:n_frames[1]]
+            else:
+                charge = charge[-n_frames:]
+            avg_charge = np.mean(charge, axis = 0)
             
             bins = np.arange(0, max(z_data) + binwidth, binwidth)
             targe_avg_charge = avg_charge[target_top_idx]

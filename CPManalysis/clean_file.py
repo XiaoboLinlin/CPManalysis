@@ -54,9 +54,7 @@ def clean_dumpfile(file_name, stop_at = -1, keep_last_frame = False):
     diff = np.diff(ts)
     diff_idx = np.where(diff<=0)
     diff_idx = diff_idx[0] + 1
-    if len(diff_idx) == 0: ### no restart process, so just return original content
-        print('no restart detected')
-        return content
+    
     target_ts = ts[diff_idx]
 
     ### the last time step index
@@ -64,6 +62,13 @@ def clean_dumpfile(file_name, stop_at = -1, keep_last_frame = False):
     last_ts_idx = [m.start() for m in find_idx_]
     last_ts_idx = last_ts_idx[0]
 
+    if len(diff_idx) == 0: ### no restart process, so just return original content
+        print('no restart detected')
+        if keep_last_frame:
+            return content
+        else:
+            return content[0:last_ts_idx]
+        
     regex = ""
     for i, ts_ in enumerate(target_ts):
         if i == 0:

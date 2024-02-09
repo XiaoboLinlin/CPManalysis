@@ -57,13 +57,14 @@ def q_np(lmp_trj, n_atom):
     return charge_2d
 
 
-def q_np2(lmp_trj, n_atom):
+def q_np2(lmp_trj, n_atom, stop_at=-1):
     # import sys
     """extract charge data from ele.lammpstrj (only have id q: ITEM: ATOMS id q) to numpy array
 
     Args:
         lmp_trj (_type_): .lammpstrj
         n_atom (int): the total number of atoms in the system
+        stop_at (int): The time step you want to stop at, -1 means not stop at any timestep
 
     Returns:
         np array: charge data in 2d array [n_frames, n_atoms]
@@ -75,13 +76,17 @@ def q_np2(lmp_trj, n_atom):
     with open(lmp_trj, 'r') as f:
         look = False
         i = 0 
+        j = 0
         for line in f:
             i += 1 
             line_ = line.split()
             if line_[0] == "ITEM:" and line_[1] == "ATOMS":
                 look = True
+                j += 1
             if line_[0] == "ITEM:" and line_[1] == "TIMESTEP":
                 look = False
+            if line_[0] == "{}".format(stop_at):
+                break
             if look and line_[0] != "ITEM:":
                 # print('here')
                 try:
@@ -90,6 +95,7 @@ def q_np2(lmp_trj, n_atom):
                     print('line number ', i)
                     print(line_)
                 q_total.append(q)
+        print("j = ", j)
     charge = np.array(q_total)
     charge_2d = np.reshape(charge, (int(len(charge)/n_atom),n_atom))
     return charge_2d
