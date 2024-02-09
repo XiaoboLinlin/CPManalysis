@@ -7,7 +7,7 @@ CPManalysis is a Python package designed for comprehensive charge distribution a
 
 To install CPManalysis, simply run the following command in your terminal:
 
-\```bash
+\```
 pip install -e .
 \```
 
